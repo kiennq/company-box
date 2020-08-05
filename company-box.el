@@ -75,22 +75,6 @@
   :prefix "company-box-"
   :group 'company)
 
-(defface company-box-candidate
-  '((((background light)) :foreground "black")
-    (t :foreground "white"))
-  "Face used to color candidates."
-  :group 'company-box)
-
-(defface company-box-annotation
-  '((t :inherit company-tooltip-annotation))
-  "Face used to color annotations."
-  :group 'company-box)
-
-(defface company-box-selection
-  '((t :inherit company-tooltip-selection))
-  "Face used to color the selected candidate."
-  :group 'company-box)
-
 (defface company-box-background
   '((t :inherit company-tooltip))
   "Face used for frame's background.
@@ -98,7 +82,7 @@ Only the 'background' color is used in this face."
   :group 'company-box)
 
 (defface company-box-scrollbar
-  '((t :inherit company-box-selection))
+  '((t :inherit company-tooltip-selection))
   "Face used for the scrollbar.
 Only the 'background' color is used in this face."
   :group 'company-box)
@@ -112,13 +96,6 @@ Note that icons from images cannot be colored."
 (defcustom company-box-enable-icon t
   "Whether or not to display icons."
   :type 'boolean
-  :group 'company-box)
-
-(defcustom company-box-max-candidates 100
-  "Maximum number of candidates.
-A big number might slowndown the rendering.
-To change the number of _visible_ chandidates, see `company-tooltip-limit'"
-  :type 'integer
   :group 'company-box)
 
 (defcustom company-box-tooltip-minimum-width 60
@@ -224,8 +201,6 @@ Examples:
     (no-special-glyphs . t))
   "Frame parameters used to create the frame.")
 
-(defvar-local company-box--ov nil)
-(defvar-local company-box--ov-common nil)
 (defvar-local company-box--max 0)
 (defvar-local company-box--with-icons-p nil)
 (defvar-local company-box--icon-offset 3)
@@ -283,14 +258,6 @@ Examples:
     (set-frame-parameter frame 'name "")
     frame))
 
-(defun company-box--get-ov nil
-  (or company-box--ov
-      (setq company-box--ov (make-overlay 1 1))))
-
-(defun company-box--get-ov-common nil
-  (or company-box--ov-common
-      (setq company-box--ov-common (make-overlay 1 1))))
-
 (defun company-box--extract-background (color)
   "COLOR can be a string, face or plist."
   `(:background
@@ -298,33 +265,6 @@ Examples:
          (and (facep color) (face-background color nil t))
          (let ((back (plist-get color :background)))
            (if (facep back) (face-background back nil t) back)))))
-
-(defun company-box--update-image (&optional color)
-  "Change the image background color, because the overlay doesn't apply on it.
-The function either restore the original image or apply the COLOR.
-It doesn't nothing if a font icon is used."
-  (-when-let* ((bol (line-beginning-position))
-               (point (text-property-any bol (min (+ bol 2) (point-max)) 'company-box-image t))
-               (image (get-text-property point 'display-origin))
-               (new-image (append image (and color (company-box--extract-background color)))))
-    (put-text-property point (1+ point) 'display new-image)))
-
-(defun company-box--update-line (selection common)
-  (company-box--update-image)
-  (goto-char 1)
-  (forward-line selection)
-  (let ((beg (line-beginning-position)))
-    (move-overlay (company-box--get-ov) beg (line-beginning-position 2))
-    (move-overlay (company-box--get-ov-common)
-                  (+ company-box--icon-offset beg)
-                  (+ 1 (length common) (+ company-box--icon-offset beg))))
-  (let ((color (or (get-text-property (point) 'company-box--color)
-                   'company-box-selection)))
-    (overlay-put (company-box--get-ov) 'face color)
-    (overlay-put (company-box--get-ov-common) 'face 'company-tooltip-common-selection)
-    (company-box--update-image color))
-  (run-hook-with-args 'company-box-selection-hook selection
-                      (or (frame-parent) (selected-frame))))
 
 (defun company-box--render-buffer (string)
   (with-current-buffer (company-box--get-buffer)
@@ -452,8 +392,13 @@ It doesn't nothing if a font icon is used."
   (alist-get backend company-box-backends-colors))
 
 (defun company-box--resolve-color (color key)
-  (or (and (stringp color) color)
-      (and (listp color) (or (plist-get color key) (plist-get color :all)))))
+  "Resolve the property KEY of COLOR."
+  (cond
+   ((stringp color) color)
+   ((listp color)
+    (if (plist-member color key)
+        (plist-get color key)
+      (plist-get color :all)))))
 
 (defun company-box--resolve-colors (color)
   (when color
@@ -471,31 +416,6 @@ It doesn't nothing if a font icon is used."
                             (if (stringp color) (list :foreground color) color)
                             nil string))
   string)
-
-(defun company-box--make-line (candidate)
-  (-let* (((candidate annotation len-c len-a backend) candidate)
-          (color (company-box--get-color backend))
-          ((c-color a-color i-color s-color) (company-box--resolve-colors color))
-          (icon-string (and company-box--with-icons-p (company-box--add-icon candidate)))
-          (candidate-string (concat (and company-common (propertize company-common 'face 'company-tooltip-common))
-                                    (substring (propertize candidate 'face 'company-box-candidate) (length company-common) nil)))
-          (align-string (when annotation
-                          (concat " " (and company-tooltip-align-annotations
-                                           (propertize " " 'display `(space :align-to (- right-fringe ,(or len-a 0) 1)))))))
-          (space company-box--space)
-          (icon-p company-box-enable-icon)
-          (annotation-string (and annotation (propertize annotation 'face 'company-box-annotation)))
-          (line (concat (unless (or (and (= space 2) icon-p) (= space 0))
-                          (propertize " " 'display `(space :width ,(if (or (= space 1) (not icon-p)) 1 0.75))))
-                        (company-box--apply-color icon-string i-color)
-                        (company-box--apply-color candidate-string c-color)
-                        align-string
-                        (company-box--apply-color annotation-string a-color)))
-          (len (length line)))
-    (add-text-properties 0 len (list 'company-box--len (+ len-c len-a)
-                                     'company-box--color s-color)
-                         line)
-    line))
 
 (defun company-box--backend (candidate)
   (or (get-text-property 0 'company-backend candidate)
@@ -522,10 +442,43 @@ It doesn't nothing if a font icon is used."
   "Handler for `company-frontend' show."
   (setq company-box--max 0
         company-box--with-icons-p (company-box--with-icons-p))
-  (--> (-take company-box-max-candidates company-candidates)
-       (mapcar (-compose 'company-box--make-line 'company-box--make-candidate) it)
-       (mapconcat 'identity it "\n")
-       (company-box--display it)))
+  (let* ((company-tooltip-offset-display 'none)
+         (height (min company-tooltip-limit company-candidates-length))
+         (frame (company-box--get-frame))
+         (scroll-pad (if (and frame (company-box--scrollbar-p frame)) 2 0))
+         (frame-width (frame-width frame))
+         (fill-props
+          (lambda (func cand annotation width selected left right)
+            "Wrapper of `company-fill-propertize'."
+            (-let* ((backend (company-box--backend cand))
+                    (color (company-box--get-color backend))
+                    ((_c-color _a-color i-color s-color) (company-box--resolve-colors color))
+                    (icon (let ((icon (and company-box--with-icons-p (company-box--add-icon cand))))
+                            (company-box--apply-color icon i-color)
+                            (when-let ((image (get-text-property 0 'display-origin icon))
+                                       (color (and selected (or s-color 'company-tooltip-selection)))
+                                       (new-image (append image (company-box--extract-background color))))
+                              (put-text-property 0 (length icon) 'display new-image icon))
+                            icon))
+                    (left (concat left icon))
+                    (width (max width (- frame-width
+                                         (string-width (or left ""))
+                                         (string-width (or right ""))
+                                         scroll-pad)))
+                    (annotation (and annotation (propertize annotation 'display '(height 1))))
+                    (len-total (+ (string-width (or cand "")) (string-width (or annotation ""))))
+                    (line (funcall func cand annotation width selected left right)))
+              (when (> len-total company-box--max)
+                (setq company-box--max len-total))
+              (add-text-properties 0 (length line) `(company-box--len ,len-total) line)
+              line))))
+    (unwind-protect
+        (progn
+          (advice-add 'company-fill-propertize :around fill-props '((depth . 100)))
+          (--> (company--create-lines company-selection height)
+               (mapconcat 'identity it "\n")
+               (company-box--display it)))
+      (advice-remove 'company-fill-propertize fill-props))))
 
 (defvar company-box-hide-hook nil)
 
@@ -587,8 +540,8 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box--scrollbar-p (frame)
   (/= 1 (company-box--percent
-         company-box--height
-         (* (min company-candidates-length company-box-max-candidates)
+         (or company-box--height 1.0)
+         (* company-candidates-length
             (frame-char-height frame)))))
 
 (defun company-box--update-scrollbar-buffer (height-blank height-scrollbar percent buffer)
@@ -613,7 +566,7 @@ It doesn't nothing if a font icon is used."
   (let* ((selection company-selection)
          (buffer (company-box--get-buffer "-scrollbar"))
          (h-frame company-box--height)
-         (n-elements (min company-candidates-length company-box-max-candidates))
+         (n-elements company-candidates-length)
          (percent (company-box--percent selection (1- n-elements)))
          (percent-display (company-box--percent h-frame (* n-elements (frame-char-height frame))))
          (scrollbar-pixels (* h-frame percent-display))
@@ -639,18 +592,12 @@ It doesn't nothing if a font icon is used."
 ;; ;;          selection n-elements percent percent-display height height-scrollbar height-blank height (+ height-scrollbar height-blank))
 ;; ;; (message "HEIGHT-S-1: %s HEIGHT-B-1: %s sum: %s" scrollbar-pixels blank-pixels (+ height-scrollbar-1 height-blank-1))
 
-(defun company-box--has-selection ()
-  "Check if there's selection or not.
-This should be called only when `company-box-frontend' is active."
-  (company-fill-propertize "" nil 0 t nil nil))
-
 (defun company-box--change-line ()
-  (when (company-box--has-selection)
-    (let ((selection company-selection)
-          (common company-common))
-      (with-selected-window (get-buffer-window (company-box--get-buffer) t)
-        (company-box--update-line selection common))
-      (company-box--update-scrollbar (company-box--get-frame)))))
+  (let ((selection company-selection))
+    (with-selected-window (get-buffer-window (company-box--get-buffer) t)
+      (run-hook-with-args 'company-box-selection-hook selection
+                          (or (frame-parent) (selected-frame))))
+    (company-box--update-scrollbar (company-box--get-frame))))
 
 (defun company-box--start-changed-p ()
   (not (equal company-box--start (window-start))))
@@ -680,19 +627,6 @@ This should be called only when `company-box-frontend' is active."
       (and (eq company-box-show-single-candidate 'when-no-other-frontend)
            (cdr company-frontends))))
 
-(defun company-box--select-next-limit-candidates (func &rest args)
-  "Wrapper around `company-select-next'.
-This makes sure only `company-box-max-candidates' are considered."
-  (let ((company-candidates-length (min company-box-max-candidates
-                                        company-candidates-length)))
-    (apply func args)))
-
-(defun company-box--check-selection (&rest args)
-  "Wrapper around `company-fill-propertize'.
-Return if there's selection, that can be different from `company-selection'
-depends on `company-tng-frontend'."
-  (nth 3 args))
-
 (defun company-box-frontend (command)
   "`company-mode' frontend using child-frame.
 COMMAND: See `company-frontends'."
@@ -706,16 +640,11 @@ COMMAND: See `company-frontends'."
   ;;(message "last-command: %s" last-command)
   (cond
    ((eq command 'hide)
-    (advice-remove 'company-select-next #'company-box--select-next-limit-candidates)
-    (advice-remove 'company-fill-propertize #'company-box--check-selection)
     (company-box-hide))
    ((and (equal company-candidates-length 1)
          (company-box--hide-single-candidate))
     (company-box-hide))
    ((eq command 'show)
-    (advice-add 'company-select-next :around #'company-box--select-next-limit-candidates)
-    (advice-add 'company-fill-propertize :override #'company-box--check-selection
-                '((depth . 100)))
     (company-box-show))
    ((eq command 'update)
     (company-box-update))
