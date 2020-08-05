@@ -399,7 +399,7 @@ It doesn't nothing if a font icon is used."
     (setq company-box--x (+ x left)
           company-box--start (or company-box--start (window-start))
           company-box--height height)
-    (set-frame-size frame (company-box--update-width 'no-update (/ height char-height))
+    (set-frame-size frame (company-box--update-width nil (/ height char-height))
                     height t)
     (set-frame-position frame (max (+ x left) 0) (+ y top))
     (set-frame-parameter frame 'company-box-window-origin (selected-window))
@@ -558,8 +558,8 @@ It doesn't nothing if a font icon is used."
     (* (+ max (if company-box--with-icons-p 6 2))
        char-width)))
 
-(defun company-box--update-width (&optional no-update height)
-  (unless no-update
+(defun company-box--update-width (&optional update height)
+  (when update
     (redisplay))
   (-let* ((frame (company-box--get-frame))
           (window (frame-parameter nil 'company-box-window))
@@ -579,7 +579,7 @@ It doesn't nothing if a font icon is used."
                            (* company-box-tooltip-maximum-width char-width))
                       (* company-box-tooltip-minimum-width char-width)))
           (diff (abs (- (frame-pixel-width frame) width))))
-    (or (and no-update width)
+    (or (and (not update) width)
         (and (> diff 2) (set-frame-width frame width nil t)))))
 
 (defun company-box--percent (a b)
