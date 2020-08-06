@@ -60,9 +60,6 @@
 
 ;;; Code:
 
-(unless (require 'icons-in-terminal nil t)
-  (defun icons-in-terminal (&rest _) " "))
-
 (require 'subr-x)
 (require 'dash)
 (require 'dash-functional)
@@ -125,10 +122,10 @@ The functions takes 1 parameter, the completion candidate.
 It should return an ICON or nil.
 An ICON can be either a SYMBOL, an IMAGE, a LIST, a STRING:
 
-- SYMBOL:  It is the name of the icon (from `icons-in-terminal').
+- SYMBOL:  It is the name of the icon (from `company-box--icons-in-terminal').
 - IMAGE:   An image descriptor [1]
            Example: '(image :type png :file \"/path/to/image.png\")
-- LIST:    The list is then `apply' to `icons-in-terminal' function.
+- LIST:    The list is then `apply' to `company-box--icons-in-terminal' function.
            Example: '(fa_icon :face some-face :foreground \"red\")
 - STRING:  A simple string which is inserted, should be of length 1
 
@@ -139,6 +136,10 @@ If all functions returns nil, `company-box-icons-unknown' is used.
   :type 'list
   :group 'company-box)
 
+(defalias 'company-box--icons-in-terminal
+  (if (require 'company-box--icons-in-terminal nil t)
+      'icons-in-terminal
+    (lambda (&rest _) " ")))
 
 (defvar company-box-backends-colors
   '((company-yasnippet . (:all "lime green" :selected (:background "lime green" :foreground "black"))))
@@ -372,10 +373,10 @@ Examples:
                   (propertize " " 'display icon 'company-box-image t
                               'display-origin icon))
                  ((and company-box-color-icon icon)
-                  (apply 'icons-in-terminal icon))
-                 (t (icons-in-terminal (or (car icon) 'fa_question_circle)))))
+                  (apply 'company-box--icons-in-terminal icon))
+                 (t (company-box--icons-in-terminal (or (car icon) 'fa_question_circle)))))
           ((symbolp icon)
-           (icons-in-terminal (or icon 'fa_question_circle)))
+           (company-box--icons-in-terminal (or icon 'fa_question_circle)))
           (t icon))))
 
 (defun company-box--using-image-p nil

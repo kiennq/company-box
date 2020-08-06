@@ -30,6 +30,7 @@
 
 (require 'dash)
 (require 'company)
+(require 'subr-x)
 
 (defgroup company-box-doc nil
   "Display documentation popups alongside company-box"
