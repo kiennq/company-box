@@ -142,18 +142,22 @@ If all functions returns nil, `company-box-icons-unknown' is used.
     (lambda (&rest _) " ")))
 
 (defvar company-box-backends-colors
-  '((company-yasnippet . (:all "lime green" :selected (:background "lime green" :foreground "black"))))
+  '((company-yasnippet :all font-lock-variable-name-face :selected nil)
+    (company-dabbrev :all nil)
+    (company-dabbrev-code :all nil)
+    (:default :all font-lock-type-face))
   "List of colors to use for specific backends.
 
 Each element has the form (BACKEND . COLOR)
 
-BACKEND is the backend's symbol for which the color applies
+BACKEND is the backend's symbol for which the color applies.
+The :default property, if set, is used as default fallback for all backend.
 COLOR can be a LIST or a STRING:
 
 - LIST:    A property list with the following keys:
                 `:candidate'  : Color to use on the candidate
                 `:annotation' : Color to use on the annotation
-                `:icon'       : Color to use on the icon. Does nothing if the
+                `:icon'       : Color to use on the icon.  Does nothing if the
                                 icon is an image.
                 `:all'        : Replace (:candidate X :annotation X :icon X)
            For those 4 attributes, values can be a face, a plist
@@ -390,7 +394,8 @@ Examples:
      (propertize " " 'display `(space :align-to (+ left-fringe ,(if (> company-box--space 2) 3 2)))))))
 
 (defun company-box--get-color (backend)
-  (alist-get backend company-box-backends-colors))
+  (or (alist-get backend company-box-backends-colors)
+      (alist-get :default company-box-backends-colors)))
 
 (defun company-box--resolve-color (color key)
   "Resolve the property KEY of COLOR."
@@ -467,11 +472,13 @@ Examples:
                                          (string-width (or right ""))
                                          scroll-pad)))
                     (annotation (and annotation (propertize annotation 'display '(height 1))))
-                    (len-total (+ (string-width (or cand "")) (string-width (or annotation ""))))
-                    (line (funcall func cand annotation width selected left right)))
-              (when (> len-total company-box--max)
-                (setq company-box--max len-total))
-              (add-text-properties 0 (length line) `(company-box--len ,len-total) line)
+                    (total-len (+ (string-width (or cand "")) (string-width (or annotation ""))))
+                    (line (funcall func cand annotation width selected left right))
+                    (line-len (length line)))
+              (when (> total-len company-box--max)
+                (setq company-box--max total-len))
+              (add-text-properties 0 line-len `(company-box--len ,total-len) line)
+              (remove-text-properties 0 line-len '(mouse-face nil) line)
               line))))
     (unwind-protect
         (progn
