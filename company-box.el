@@ -690,11 +690,22 @@ COMMAND: See `company-frontends'."
   (company-box--kill-delay (frame-parameter frame 'company-box-buffer))
   (company-box--kill-delay (frame-parameter frame 'company-box-scrollbar)))
 
+(defun company-box--is-box-buffer nil
+  (string-prefix-p " *company-box" (buffer-name)))
+
+(defun company-box--tweak-external-packages nil
+  (with-eval-after-load 'dimmer
+    (when (boundp 'dimmer-prevent-dimming-predicates)
+      (add-to-list
+       'dimmer-prevent-dimming-predicates
+       'company-box--is-own-buffer))))
+
 (defun company-box--set-mode (&optional frame)
   (cond
    ((and (bound-and-true-p company-box-mode) (not (display-graphic-p frame)))
     (company-box-mode -1))
    ((bound-and-true-p company-box-mode)
+    (company-box--tweak-external-packages)
     (remove-hook 'after-make-frame-functions 'company-box--set-mode t)
     (add-hook 'delete-frame-functions 'company-box--kill-buffer)
     (add-hook 'buffer-list-update-hook 'company-box--handle-window-changes t)
