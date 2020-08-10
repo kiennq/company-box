@@ -552,7 +552,7 @@ Examples:
          (* company-candidates-length
             (frame-char-height frame)))))
 
-(defun company-box--scrollbar-prevent-changes (&rest)
+(defun company-box--scrollbar-prevent-changes (&rest _)
   (let ((window-min-width 2)
         (window-safe-min-width 2)
         (ignore-window-parameters t)
