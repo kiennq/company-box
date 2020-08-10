@@ -297,6 +297,9 @@ See `company-box-icons-images' or `company-box-icons-all-the-icons' for the ICON
 [1] https://github.com/Microsoft/language-server-protocol/blob/gh-pages/\
 specification.md#completion-request-leftwards_arrow_with_hook.")
 
+(defconst company-box-icons--eglot-alist
+  company-box-icons--lsp-alist)
+
 (declare-function lsp-get "ext:lsp-protocol")
 
 (defun company-box-icons--lsp (candidate)
