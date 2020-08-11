@@ -114,7 +114,8 @@
     frame))
 
 (defun company-box-doc--show (selection frame)
-  (-when-let* ((valid-state (and (eq (selected-frame) frame)
+  (-when-let* ((selection selection)
+               (valid-state (and (eq (selected-frame) frame)
                                  company-box--bottom
                                  (company-box--get-frame)
                                  (frame-visible-p (company-box--get-frame))))

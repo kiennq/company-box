@@ -601,7 +601,7 @@ Examples:
     (current-buffer)))
 
 (defun company-box--update-scrollbar (frame &optional first)
-  (let* ((selection company-selection)
+  (let* ((selection (or company-selection 0))
          (buffer (company-box--get-buffer "-scrollbar"))
          (h-frame company-box--height)
          (n-elements company-candidates-length)
