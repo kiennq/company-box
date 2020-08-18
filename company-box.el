@@ -394,6 +394,8 @@ Examples:
                          (symbol-value company-box-icons-alist))))
     (cond ((listp icon)
            (cond ((eq 'image (car icon))
+                  (unless (plist-get icon :height)
+                    (setq icon (append icon `(:height ,(round (* (frame-char-height) 0.95))))))
                   (propertize " " 'display icon 'company-box-image t
                               'display-origin icon))
                  ((and company-box-color-icon icon)

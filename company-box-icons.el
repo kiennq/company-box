@@ -47,7 +47,6 @@
                             (member extension imagemagick-enabled-types))))
       `(image :type ,(if use-magick 'imagemagick 'png)
               :file ,(concat company-box-icons-dir file)
-              :height ,(round (* (default-font-height) 0.85))
               :ascent center))))
 
 (defconst company-box-icons-icons-in-terminal
