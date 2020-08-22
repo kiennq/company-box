@@ -341,7 +341,7 @@ specification.md#completion-request-leftwards_arrow_with_hook.")
 
 (defun company-box-icons--yasnippet (candidate)
   (when (get-text-property 0 'yas-annotation candidate)
-    'Template))
+    'Snippet))
 
 (defun company-box-icons-resize (size &optional icons-images)
   "Set icons size in pixels."
