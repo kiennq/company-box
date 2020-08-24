@@ -298,6 +298,7 @@ Examples:
           header-line-format nil
           display-line-numbers nil
           truncate-lines t
+          show-trailing-whitespace nil
           cursor-in-non-selected-windows nil)
     (setq-local scroll-step 1)
     (setq-local scroll-conservatively 10000)
@@ -588,6 +589,7 @@ Examples:
     (erase-buffer)
     (setq header-line-format nil
           mode-line-format nil
+          show-trailing-whitespace nil
           cursor-in-non-selected-windows nil)
     (unless (zerop height-blank)
       (insert (propertize " " 'display `(space :align-to right-fringe :height ,height-blank))
