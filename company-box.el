@@ -657,7 +657,7 @@ Examples:
     (and (frame-live-p frame)
          (frame-visible-p frame)
          (or (not (eq (selected-window) (frame-parameter frame 'company-box-window-origin)))
-             (not (eq (current-buffer) (frame-parameter frame 'company-box-buffer-origin))))
+             (not (eq (window-buffer) (frame-parameter frame 'company-box-buffer-origin))))
          (if on-idle (company-box-hide)
            ;; Handle when this function (in `buffer-list-update-hook') has been
            ;; triggered by a function that select only temporary another window/buffer.
