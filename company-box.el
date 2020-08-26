@@ -105,7 +105,7 @@ Note that icons from images cannot be colored."
   :type 'integer
   :group 'company-box)
 
-(defcustom company-box-show-single-candidate 'when-no-other-frontend
+(defcustom company-box-show-single-candidate 'always
   "Whether or not to display the candidate if there is only one.
 `when-no-other-frontend' will display the candidate if no other front ends are
 detected."
