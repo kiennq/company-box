@@ -31,6 +31,7 @@
 (require 'dash)
 (require 'company)
 (require 'cl-macs)
+(require 'subr-x)
 
 (defgroup company-box-doc nil
   "Display documentation popups alongside company-box"
@@ -130,7 +131,7 @@
       (unless (frame-visible-p (frame-parameter nil 'company-box-doc-frame))
         (make-frame-visible (frame-parameter nil 'company-box-doc-frame))))))
 
-(defun company-box-completing-read (prompt candidates &rest rest)
+(defun company-box-completing-read (_prompt candidates &rest _)
   "`cider', and probably other libraries, prompt the user to
 resolve ambiguous documentation requests.  Instead of failing we
 just grab the first candidate and press forward."
