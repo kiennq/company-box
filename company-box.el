@@ -303,7 +303,10 @@ Examples:
     (setq-local scroll-step 1)
     (setq-local scroll-conservatively 10000)
     (setq-local scroll-margin  0)
+    (setq-local bidi-display-reordering nil)
+    (setq-local redisplay--inhibit-bidi t)
     (setq-local scroll-preserve-screen-position t)
+    (setq-local fontification-functions nil)
     (add-hook 'window-configuration-change-hook 'company-box--prevent-changes t t)))
 
 (defvar-local company-box--bottom nil)
@@ -365,7 +368,7 @@ Examples:
     (setq company-box--x (+ x left)
           company-box--start (or company-box--start (window-start))
           company-box--height height)
-    (set-frame-size frame (company-box--update-width 'no-update (/ height char-height))
+    (set-frame-size frame (company-box--update-width (/ height char-height))
                     height t)
     (set-frame-position frame (max (+ x left) 0) (+ y top))
     (set-frame-parameter frame 'company-box-window-origin (selected-window))
@@ -542,9 +545,7 @@ Examples:
     (* (+ max (if company-box--with-icons-p 6 2))
        char-width)))
 
-(defun company-box--update-width (&optional no-update height)
-  (unless no-update
-    (redisplay))
+(defun company-box--update-width (&optional height)
   (-let* ((frame (company-box--get-frame))
           (window (frame-parameter nil 'company-box-window))
           (start (window-start window))
@@ -563,8 +564,7 @@ Examples:
                            (* company-box-tooltip-maximum-width char-width))
                       (* company-box-tooltip-minimum-width char-width)))
           (diff (abs (- (frame-pixel-width frame) width))))
-    (or (and no-update width)
-        (and (> diff 2) (set-frame-width frame width nil t)))))
+    (or width (and (> diff 2) (set-frame-width frame width nil t)))))
 
 (defun company-box--percent (a b)
   (/ (float a) b))
