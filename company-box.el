@@ -72,12 +72,6 @@
   :prefix "company-box-"
   :group 'company)
 
-(defface company-box-background
-  '((t :inherit company-tooltip))
-  "Face used for frame's background.
-Only the 'background' color is used in this face."
-  :group 'company-box)
-
 (defface company-box-scrollbar
   '((t :inherit company-tooltip-selection))
   "Face used for the scrollbar.
@@ -270,7 +264,8 @@ Examples:
                          `((vertical-scroll-bars . ,(company-box--make-scrollbar-parameter))
                            (default-minibuffer-frame . ,(selected-frame))
                            (minibuffer . ,(minibuffer-window))
-                           (background-color . ,(face-background 'company-box-background nil t)))))
+                           (inhibit-double-buffering . t)
+                           (background-color . ,(face-background 'company-tooltip nil t)))))
          (window (display-buffer-in-child-frame buffer `((child-frame-parameters . ,params))))
          (frame (window-frame window)))
     (set-frame-parameter frame 'company-box-buffer buffer)
