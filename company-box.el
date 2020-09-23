@@ -159,7 +159,7 @@ If all functions returns nil, `company-box-icons-unknown' is used.
   '((company-yasnippet :all font-lock-variable-name-face :selected nil)
     (company-dabbrev :all nil)
     (company-dabbrev-code :all nil)
-    (:default :all font-lock-type-face))
+    (:default :all font-lock-type-face :selected nil))
   "List of colors to use for specific backends.
 
 Each element has the form (BACKEND . COLOR)

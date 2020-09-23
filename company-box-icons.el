@@ -147,7 +147,7 @@
       (Function . ,(company-box-icons-image "Method.png"))
       (Constructor . ,(company-box-icons-image "Method.png"))
       (Field . ,(company-box-icons-image "Field.png"))
-      (Variable . ,(company-box-icons-image "Field.png"))
+      (Variable . ,(company-box-icons-image "LocalVariable.png"))
       (Class . ,(company-box-icons-image "Class.png"))
       (Interface . ,(company-box-icons-image "Interface.png"))
       (Module . ,(company-box-icons-image "Namespace.png"))
@@ -169,7 +169,7 @@
       (TypeParameter . ,(company-box-icons-image "Class.png"))
       (Template . ,(company-box-icons-image "Template.png")))))
 
-(defvar company-box-icons-idea
+(defconst company-box-icons-idea
   (eval-when-compile
     `((Unknown . ,(company-box-icons-image "idea/package.png"))
       ;; (Text . ,(company-box-icons-image "idea/misc.png"))
@@ -202,22 +202,23 @@
 (declare-function all-the-icons-faicon "ext:all-the-icons")
 (declare-function all-the-icons-material "ext:all-the-icons")
 (declare-function all-the-icons-octicon "ext:all-the-icons")
+(declare-function all-the-icons-fileicon "ext:all-the-icons")
 
 (when (require 'all-the-icons nil t)
-  (defvar company-box-icons-all-the-icons
+  (defconst company-box-icons-all-the-icons
     `((Unknown . ,(all-the-icons-faicon "code"))
       (Text . ,(all-the-icons-material "text_format"))
       (Method . ,(all-the-icons-faicon "cube"))
       (Function . ,(all-the-icons-faicon "cube"))
       (Constructor . ,(all-the-icons-faicon "cube"))
       (Field . ,(all-the-icons-faicon "tag"))
-      (Variable . ,(all-the-icons-faicon "tag"))
+      (Variable . ,(all-the-icons-fileicon "tag"))
       (Class . ,(all-the-icons-faicon "cogs"))
       (Interface . ,(all-the-icons-faicon "italic"))
       (Module . ,(all-the-icons-faicon "code"))
       (Property . ,(all-the-icons-faicon "wrench"))
       (Unit . ,(all-the-icons-material "streetview"))
-      (Value . ,(all-the-icons-faicon "tag"))
+      (Value . ,(all-the-icons-faicon "book"))
       (Enum . ,(all-the-icons-material "library_books"))
       (Keyword . ,(all-the-icons-material "vpn_key"))
       (Snippet . ,(all-the-icons-faicon "expand"))
