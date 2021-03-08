@@ -290,6 +290,7 @@ Examples:
     (insert string "\n")
     (setq mode-line-format nil
           header-line-format nil
+          tab-line-format nil
           display-line-numbers nil
           truncate-lines t
           show-trailing-whitespace nil
@@ -583,6 +584,7 @@ Examples:
     (erase-buffer)
     (setq header-line-format nil
           mode-line-format nil
+          tab-line-format nil
           show-trailing-whitespace nil
           cursor-in-non-selected-windows nil)
     (unless (zerop height-blank)
