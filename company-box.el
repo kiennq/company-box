@@ -295,6 +295,8 @@ Examples:
           truncate-lines t
           show-trailing-whitespace nil
           cursor-in-non-selected-windows nil)
+    (when (bound-and-true-p tab-bar-mode)
+      (set-frame-parameter (company-box--get-frame) 'tab-bar-lines 0))
     (setq-local scroll-step 1)
     (setq-local scroll-conservatively 10000)
     (setq-local scroll-margin  0)
@@ -587,6 +589,8 @@ Examples:
           tab-line-format nil
           show-trailing-whitespace nil
           cursor-in-non-selected-windows nil)
+    (when (frame-parameter (company-box--get-frame) 'tab-bar-lines)
+      (set-frame-parameter (company-box--get-frame) 'tab-bar-lines 0))
     (unless (zerop height-blank)
       (insert (propertize " " 'display `(space :align-to right-fringe :height ,height-blank))
               (propertize "\n" 'face '(:height 1))))

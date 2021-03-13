@@ -109,6 +109,8 @@
               tab-line-format nil
               show-trailing-whitespace nil
               cursor-in-non-selected-windows nil)
+        (when (bound-and-true-p tab-bar-mode)
+          (set-frame-parameter (company-box-doc--get-frame) 'tab-bar-lines 0))
         (current-buffer)))))
 
 (defun company-box-doc--make-frame (buffer)
@@ -119,6 +121,10 @@
     ;; (set-face-background 'internal-border "white" frame)
     (set-frame-parameter frame 'name "")
     frame))
+
+(defun company-box-doc--get-frame (&optional frame)
+  "Return company-box-doc frame in FRAME."
+  (frame-parameter frame 'company-box-doc-frame))
 
 (defun company-box-doc--show (selection frame)
   (cl-letf (((symbol-function 'completing-read) #'company-box-completing-read)
@@ -134,11 +140,11 @@
                  (doc (or (company-call-backend 'quickhelp-string candidate)
                           (company-box-doc--fetch-doc-buffer candidate)))
                  (doc (company-box-doc--make-buffer doc)))
-      (unless (frame-live-p (frame-parameter nil 'company-box-doc-frame))
+      (unless (frame-live-p (company-box-doc--get-frame))
         (set-frame-parameter nil 'company-box-doc-frame (company-box-doc--make-frame doc)))
-      (company-box-doc--set-frame-position (frame-parameter nil 'company-box-doc-frame))
-      (unless (frame-visible-p (frame-parameter nil 'company-box-doc-frame))
-        (make-frame-visible (frame-parameter nil 'company-box-doc-frame))))))
+      (company-box-doc--set-frame-position (company-box-doc--get-frame))
+      (unless (frame-visible-p (company-box-doc--get-frame))
+        (make-frame-visible (company-box-doc--get-frame))))))
 
 (defun company-box-completing-read (_prompt candidates &rest _)
   "`cider', and probably other libraries, prompt the user to
@@ -148,7 +154,7 @@ just grab the first candidate and press forward."
 
 (defun company-box-doc (selection frame)
   (when company-box-doc-enable
-    (-some-> (frame-parameter frame 'company-box-doc-frame)
+    (-some-> (company-box-doc--get-frame frame)
              (make-frame-invisible))
     (when (timerp company-box-doc--timer)
       (cancel-timer company-box-doc--timer))
@@ -160,7 +166,7 @@ just grab the first candidate and press forward."
              (company-ensure-emulation-alist))))))
 
 (defun company-box-doc--hide (frame)
-  (-some-> (frame-parameter frame 'company-box-doc-frame)
+  (-some-> (company-box-doc--get-frame frame)
            (make-frame-invisible)))
 
 (defun company-box-doc-manually ()
