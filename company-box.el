@@ -453,8 +453,8 @@ Examples:
 
 (defun company-box--make-candidate (candidate)
   (let* ((annotation (-some->> (company-call-backend 'annotation candidate)
-                               (replace-regexp-in-string "[ \t\n\r]+" " ")
-                               (string-trim)))
+                       (replace-regexp-in-string "[ \t\n\r]+" " ")
+                       (string-trim)))
          (len-candidate (string-width candidate))
          (len-annotation (if annotation (string-width annotation) 0))
          (len-total (+ len-candidate len-annotation))
@@ -506,9 +506,10 @@ Examples:
     (unwind-protect
         (progn
           (advice-add 'company-fill-propertize :around fill-props '((depth . 100)))
-          (--> (company--create-lines company-selection height)
-               (mapconcat 'identity it "\n")
-               (company-box--display it)))
+          (-> (company--create-lines company-selection height)
+            (cdr)
+            (string-join "\n")
+            (company-box--display)))
       (advice-remove 'company-fill-propertize fill-props))))
 
 (defvar company-box-hide-hook nil)
@@ -520,7 +521,7 @@ Examples:
         company-box--prefix-pos nil
         company-box--edges nil)
   (-some-> (company-box--get-frame)
-           (make-frame-invisible))
+    (make-frame-invisible))
   (run-hook-with-args 'company-box-hide-hook (or (frame-parent) (selected-frame))))
 
 (defun company-box-update ()
@@ -738,7 +739,7 @@ COMMAND: See `company-frontends'."
     (add-hook 'buffer-list-update-hook 'company-box--handle-window-changes t)
     (make-local-variable 'company-frontends)
     (setq company-frontends (->> (delq 'company-pseudo-tooltip-frontend company-frontends)
-                                 (delq 'company-pseudo-tooltip-unless-just-one-frontend)))
+                              (delq 'company-pseudo-tooltip-unless-just-one-frontend)))
     (add-to-list 'company-frontends 'company-box-frontend)
     (unless (assq 'company-box-frame frameset-filter-alist)
       (push '(company-box-doc-frame . :never) frameset-filter-alist)
